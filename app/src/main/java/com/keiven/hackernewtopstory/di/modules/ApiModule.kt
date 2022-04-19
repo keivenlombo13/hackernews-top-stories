@@ -4,12 +4,15 @@ import dagger.Module
 import dagger.Provides
 import com.keiven.hackernewtopstory.data.services.ApiService
 import com.keiven.hackernewtopstory.helper.constants.Endpoint
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 @Module
-class ApiModule {
+@InstallIn(SingletonComponent::class)
+object ApiModule {
     @Provides
     @Singleton
     fun provideApiService(): ApiService {

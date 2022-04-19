@@ -1,25 +1,32 @@
 package com.keiven.hackernewtopstory.ui.storydetail
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.keiven.hackernewtopstory.data.repository.Output
 import com.keiven.hackernewtopstory.data.repository.StoryRepository
 import com.keiven.hackernewtopstory.data.state.StoryDetailState
+import com.keiven.hackernewtopstory.data.state.TopStoryState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+@HiltViewModel
 class StoryDetailViewModel @Inject constructor(private val repository: StoryRepository) :
     ViewModel() {
-    val storyDetailState = MutableLiveData<StoryDetailState>()
+    var id: Int? = null
 
-    fun getStoryDetail(id: Int) {
-        storyDetailState.value = StoryDetailState(isLoading = true)
+    private val _state = MutableLiveData<StoryDetailState>()
+    val state: LiveData<StoryDetailState> = _state
+
+    fun getStoryDetail() {
+        _state.value = StoryDetailState(isLoading = true)
 
         viewModelScope.launch {
-            val result = repository.getStoryDetail(id)
+            val result = id?.let { repository.getStoryDetail(it) }
 
             when (result) {
                 is Output.Success -> {
@@ -29,7 +36,7 @@ class StoryDetailViewModel @Inject constructor(private val repository: StoryRepo
                     detail.comments?.map {
                         comments.add(getCommentDetail(it))
                     }
-                    storyDetailState.postValue(
+                    _state.postValue(
                         StoryDetailState(
                             storyDetail = result.output,
                             comments = comments
@@ -37,7 +44,7 @@ class StoryDetailViewModel @Inject constructor(private val repository: StoryRepo
                     )
                 }
                 is Output.Error -> {
-                    storyDetailState.postValue(StoryDetailState(errorCode = result.code))
+                    _state.postValue(StoryDetailState(errorCode = result.code))
                 }
             }
         }

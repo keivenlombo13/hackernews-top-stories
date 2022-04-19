@@ -13,10 +13,10 @@
         <entry key="app/src/main/res/drawable/ic_launcher_background.xml" value="0.1585" />
         <entry key="app/src/main/res/drawable/ic_star.xml" value="0.1585" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.2578125" />
-        <entry key="app/src/main/res/layout/activity_story_detail.xml" value="0.15489130434782608" />
+        <entry key="app/src/main/res/layout/activity_story_detail.xml" value="0.29277566539923955" />
         <entry key="app/src/main/res/layout/content_story_detail.xml" value="0.15489130434782608" />
-        <entry key="app/src/main/res/layout/item_col_story.xml" value="0.15489130434782608" />
-        <entry key="app/src/main/res/layout/item_row_comment.xml" value="0.15489130434782608" />
+        <entry key="app/src/main/res/layout/item_col_story.xml" value="0.36956720766813866" />
+        <entry key="app/src/main/res/layout/item_row_comment.xml" value="0.4865227740743886" />
         <entry key="app/src/main/res/layout/layout_error.xml" value="0.15489130434782608" />
       </map>
     </option>

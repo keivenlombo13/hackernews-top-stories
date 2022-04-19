@@ -1,28 +1,22 @@
 package com.keiven.hackernewtopstory.ui.topstory
 
+import android.content.Intent
 import android.os.Bundle
-import android.widget.LinearLayout
-import android.widget.ProgressBar
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.GridLayoutManager
-import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.keiven.hackernewtopstory.R
 import com.keiven.hackernewtopstory.data.model.StoryDetail
+import com.keiven.hackernewtopstory.data.repository.Output
 import com.keiven.hackernewtopstory.data.state.TopStoryState
-import com.keiven.hackernewtopstory.di.Injector
+import com.keiven.hackernewtopstory.databinding.ActivityMainBinding
 import com.keiven.hackernewtopstory.helper.constants.StatusCode
 import com.keiven.hackernewtopstory.shared.extensions.hide
 import com.keiven.hackernewtopstory.shared.extensions.show
-import com.keiven.hackernewtopstory.shared.view.StoryItem
-import com.keiven.hackernewtopstory.ui.base.BaseViewModelFactory
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.layout_error.*
-import javax.inject.Inject
+import com.keiven.hackernewtopstory.ui.storydetail.StoryDetailActivity
+import dagger.hilt.android.AndroidEntryPoint
 
-
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     companion object {
@@ -30,85 +24,73 @@ class MainActivity : AppCompatActivity() {
         const val LAST_CLICKED = "last_clicked"
     }
 
-    private lateinit var viewModel: MainViewModel
-
-    @Inject
-    lateinit var viewModelFactory: BaseViewModelFactory<MainViewModel>
-    private val adapter = GroupAdapter<GroupieViewHolder>()
+    private val viewModel: MainViewModel by viewModels()
     private var story: StoryDetail? = null
     private var lastClicked: String? = null
-    private lateinit var layoutProgressBar: LinearLayout
+    private lateinit var adapter: MainActivityAdapter
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        adapter = MainActivityAdapter(this)
+        binding.rvStory.adapter = adapter
 
         story = intent.getParcelableExtra(STORY)
         lastClicked = intent.getStringExtra(LAST_CLICKED)
 
-        Injector.getApp().inject(this)
-
-        viewModel =
-            ViewModelProviders.of(this, viewModelFactory).get(MainViewModel::class.java)
+        viewModel.getTopStory()
         viewModel.topStoryState.observe(this, topStoryStateObserver)
+        viewModel.storyList.observe(this) {
+            adapter.setNewData(it)
+        }
 
-        registerProgressBar()
-
-        rv_story.layoutManager = GridLayoutManager(this, 2)
-        rv_story.adapter = adapter
-
-        btn_try_again.setOnClickListener {
+        binding.layoutError.btnTryAgain.setOnClickListener {
             viewModel.getTopStory()
         }
 
-        viewModel.getTopStory()
+        if (story != null) {
+            binding.layoutFavoriteStory.show()
+            binding.tvStoryTitle.text = story?.title
+            binding.tvStoryLastClicked.text = lastClicked
+        } else {
+            binding.layoutFavoriteStory.hide()
+        }
+
+        adapter.setOnClickListener { item, position ->
+            if(item is Output.Success) {
+                Intent(this, StoryDetailActivity::class.java)
+                    .apply {
+
+                        putExtra(StoryDetailActivity.ID, item.output.id)
+                    }.also { startActivity(it) }
+            }
+        }
     }
 
     private val topStoryStateObserver = Observer<TopStoryState> {
         if (it.isLoading) {
-            layoutProgressBar.show()
-            layout_error.hide()
-            layout_story_list.hide()
+            binding.progressBar.show()
+            binding.layoutError.llErrorContainer.hide()
+            binding.layoutStoryList.hide()
             return@Observer
+        } else {
+            binding.progressBar.hide()
         }
+
         if (it.errorCode != StatusCode.NO_ERROR) {
-            layoutProgressBar.hide()
-            layout_error.show()
-            tv_error_message.text =
+            binding.layoutError.llErrorContainer.show()
+            binding.layoutError.tvErrorMessage.text =
                 if (it.errorCode == StatusCode.GENERAL_ERROR) getString(R.string.general_error_message) else getString(
                     R.string.network_error_message
                 )
-            layout_story_list.hide()
+            binding.layoutStoryList.hide()
             return@Observer
         }
 
-        layoutProgressBar.hide()
-        layout_error.hide()
-        if (story != null) {
-            layout_favorite_story.show()
-            tv_story_title.text = story?.title
-            tv_story_last_clicked.text = lastClicked
-        } else {
-            layout_favorite_story.hide()
-        }
-        it.stories.map {
-            adapter.add(StoryItem(it))
-        }
-        layout_story_list.show()
-    }
-
-    private fun registerProgressBar() {
-        layoutProgressBar = LinearLayout(this)
-        layoutProgressBar.layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        )
-        layoutProgressBar.orientation = LinearLayout.VERTICAL
-
-        val progressBar = ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal)
-        progressBar.isIndeterminate = true
-
-        layoutProgressBar.addView(progressBar)
-        frame_layout.addView(layoutProgressBar)
+        binding.layoutError.llErrorContainer.hide()
+        binding.layoutStoryList.show()
     }
 }
