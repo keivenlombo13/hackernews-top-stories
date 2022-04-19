@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Hackernew Top Stories</string>
+    <string name="short_dummy_text">Lorem Ipsum Dolor Sit Amet</string>
+    <string name="long_dummy_text">Lorem Ipsum Dolor Sit Amet Lorem Ipsum Dolor Sit Amet Lorem Ipsum Dolor Sit Amet Lorem Ipsum Dolor Sit Amet</string>
+    <string name="title">Hackernew Top Stories</string>
+    <string name="title_activity_story_detail">Story Detail</string>
+    <string name="general_error_message">Maaf terjadi kesalahan</string>
+    <string name="network_error_message">Internet anda bermasalah, silahkan coba lagi</string>
+    <string name="try_again_action">Coba Lagi</string>
+    <string name="empty_comment_info">Belum ada komentar</string>
+    <string name="story_comment_info">Komentar:</string>
+    <string name="story_score_info">Skor:</string>
+</resources>
